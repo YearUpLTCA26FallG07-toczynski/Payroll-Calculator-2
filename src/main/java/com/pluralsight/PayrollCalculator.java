@@ -1,52 +1,64 @@
 
 package com.pluralsight;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.util.Scanner;
 
 public class PayrollCalculator {
 
     public static void main(String[] args) {
+        Scanner in=new Scanner(System.in);
+        try {
+            System.out.println("Enter the name of the file to process: ");
+            String fileToProcessName = in.nextLine()+".csv";
+            FileReader fileReader = new FileReader(fileToProcessName);
 
-        try (BufferedReader reader = new BufferedReader(
-                new FileReader("employees.csv"))) {
+            BufferedReader bufReader = new BufferedReader(fileReader);
+            String input;
+            Employee[] employee = new Employee[8];
+            int couter=0;
+            bufReader.readLine();
+            while((input = bufReader.readLine()) != null) {
+                int id = Integer.parseInt(input.split("\\|")[0]);
+                String name =input.split("\\|")[1];
+                double hours=Double.parseDouble(input.split("\\|")[2]);
+                double payrate=Double.parseDouble(input.split("\\|")[3]);
+                employee[couter]=new Employee(id,name,hours,payrate);
+                couter++;
+            }
+            bufReader.close();
 
-            String line;
-
-            // Read each line from the file
-            while ((line = reader.readLine()) != null) {
-
-                // Skip the header row
-                if (line.startsWith("id|")) {
-                    continue;
-                }
-
-                // Split the employee information
-                String[] tokens = line.split("\\|");
-
-                // Store the employee information
-                int employeeId = Integer.parseInt(tokens[0]);
-                String name = tokens[1];
-                double hoursWorked = Double.parseDouble(tokens[2]);
-                double payRate = Double.parseDouble(tokens[3]);
-
-                // Create an Employee object
-                Employee employee = new Employee(
-                        employeeId, name, hoursWorked, payRate
-                );
-
-                // Display payroll information
-                System.out.printf(
-                        "Employee ID: %d | Name: %-20s | Gross Pay: $%.2f%n",
-                        employee.getEmployeeId(),
-                        employee.getName(),
-                        employee.getGrossPay()
-                );
+            for(Employee e:employee){
+                System.out.println("Emplyee Id: "+e.getEmployeeId()+"   ||"+"Name: "+e.getName()+"   ||"+" Gross Pay: $"+e.getGrossPay());
             }
 
-        } catch (IOException e) {
-            System.out.println("Error reading employees.csv: " + e.getMessage());
+
+            //Buffer Writer Task
+
+            String [] empGross= new String[9];
+            empGross[0]="id|name|gross pay ";
+            for (int i=1;i<9;i++){
+                int employeeIndex =i-1;
+                empGross[i]=(employee[employeeIndex].getEmployeeId()+
+                        "|"+employee[employeeIndex].getName()+
+                        "|"+employee[employeeIndex].getGrossPay());
+            }
+
+            System.out.println("Enter the name of the payroll file to create:");
+            String fileToCreate=in.nextLine()+".txt";
+            FileWriter fileWriter = new FileWriter(fileToCreate);
+
+            BufferedWriter bufWriter = new BufferedWriter(fileWriter);
+
+            for(int i =0; i <9; i++)
+                bufWriter.write(empGross[i]+"\n");
+
+            // close the writer
+            bufWriter.close();
+        }
+        catch(IOException e) {
+            // display stack trace if there was an error
+            e.printStackTrace();
         }
     }
 }
